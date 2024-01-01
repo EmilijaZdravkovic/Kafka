@@ -25,6 +25,7 @@ weather_api_url = f'https://api.openweathermap.org/data/2.5/weather?lat={lat}&lo
 response = requests.get(weather_api_url)  
 
 weather_data = json.dumps(response.json())  
+print(weather_data)
 
 # Send weather data to Kafka topic  
 
