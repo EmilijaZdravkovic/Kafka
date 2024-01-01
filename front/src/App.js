@@ -9,17 +9,24 @@ const App = () => {
   const [data, setData] = useState([]);
   const [chartData, setChartData] = useState(null);
 
+  const [averageTemperature, setAverageTemperature] = useState(null);
+
   useEffect(() => {
     const socket = io('http://localhost:8000');
 
     socket.on('message', (message) => {
       const newData = JSON.parse(message);
+
+      if(newData.hasOwnProperty('average_temperature')) {
+        setAverageTemperature(newData.average_Temperature);
+      }
       setData((prevData) => [...prevData, newData]);
     });
 
     return () => {
       socket.disconnect();
     };
+    
   }, []);
 
   useEffect(() => {
@@ -30,7 +37,9 @@ const App = () => {
         return date.toLocaleDateString('en-GB'); // Formatiraj datum u "dd/MM/yy"
       });
 
-      const chartTemperatureData = data.map((entry) => entry.main.temp+ Math.random()*2);
+      const chartTemperatureData = data.map((entry) => entry.main.temp + Math.random()*2);
+      const chartMaxTemperatureData = data.map((entry) => entry.main.temp_max + Math.random()*2);
+      const chartMinTemperatureData = data.map((entry) => entry.main.temp_min + Math.random()*2);
 
       setChartData({
         labels: chartLabels,
@@ -39,7 +48,37 @@ const App = () => {
             label: 'Temperatura',
             data: chartTemperatureData,
             fill: false,
-            borderColor: 'rgba(75,192,192,1)',
+            borderColor: 'black',
+            tension: 0.1,
+            elements: {
+              point: {
+                radius: 0,
+              },
+              line: {
+                tension: 0.1,
+              },
+            },
+          },
+          {
+            label: 'MaxTemperatura',
+            data: chartMaxTemperatureData,
+            fill: false,
+            borderColor: 'red',
+            tension: 0.1,
+            elements: {
+              point: {
+                radius: 0,
+              },
+              line: {
+                tension: 0.1,
+              },
+            },
+          },
+          {
+            label: 'MinTemperatura',
+            data: chartMinTemperatureData,
+            fill: false,
+            borderColor: 'blue',
             tension: 0.1,
             elements: {
               point: {
@@ -59,6 +98,12 @@ const App = () => {
     <div>
       {/* Prikazivanje grafikona samo ako postoje podaci */}
       {chartData && <Line data={chartData} />}
+
+      {averageTemperature !== null && (
+        <div style={{ textAlign: 'center', fontSize: '18px'}}>
+          Prosečna temperatura: {averageTemperature.toFixed(2)} °F
+        </div>
+      )}
     </div>
   );
 };
